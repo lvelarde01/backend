@@ -1,9 +1,7 @@
 require('dotenv').config();
 const { MongoClient, ObjectId, ServerApiVersion } = require('mongodb');
 const bcrypt = require('bcryptjs');
-const uri =
-  'mongodb+srv://lvelarde:mopa2020@cluster0.agfgxcu.mongodb.net/?retryWrites=true&w=majority';
-const client = new MongoClient(uri);
+const client = new MongoClient(process.env.URI_MONGODB);
 const NAMEDB = 'manager';
 const COLLECTION = 'users';
 async function newUser(fieldsObj={}){
