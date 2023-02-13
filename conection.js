@@ -62,7 +62,7 @@ async function loginAuthGoogle(responseOauth={}){
       password,
       company:'',
       company_ssid:'',
-      theme:'green',
+      theme:'blue',
       photo:userOauth.picture,
       saveConfigBrowser:true,
       keypassword:'',
