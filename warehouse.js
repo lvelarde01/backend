@@ -83,7 +83,7 @@ async function update(queryObj = {}, fieldsObj = {}) {
 }
 async function find(queryObj = {}, fieldsObj = {}) {
   if(Object.entries(queryObj).length < 1) return null;
-  if (!ObjectId.isValid(queryObj._id)) {
+  if (!ObjectId.isValid(queryObj._id) && queryObj?._id) {
     return { error: 'Id Invalidate' };
   }
   if(queryObj?._id){

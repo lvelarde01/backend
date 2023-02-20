@@ -30,7 +30,7 @@ async function trashAll(queryObj={}){
   return result;
 } 
 async function trash(queryObj={}){
-  if (!ObjectId.isValid(queryObj._id)) {
+  if (!ObjectId.isValid(queryObj._id) ) {
     return { error: 'Id Invalidate' };
   }
   queryObj._id = ObjectId(queryObj._id);

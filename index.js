@@ -371,7 +371,6 @@ app.post('/api/warehouse/trash', (req, res) => {
 app.post('/api/warehouse/list', (req, res) => { 
   async function getAll(){ 
     let name = req.query.name || {};
-    console.log(name);     
     let dateUnix = new Date();
     let result = await FindAllWareHouse({...name},{});
     let dataArray = await result.toArray();
@@ -393,6 +392,7 @@ app.post('/api/warehouse/add', (req, res) => {
     console.log(name);  
     let dateUnix = new Date();
     let result = await FindWareHouse({name});
+    console.log(result);
     if(result || !name ){
       res.json({name:"warehouse Registrado o Invalido"});
       return;
