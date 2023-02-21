@@ -39,6 +39,13 @@ const FindAllWorkers =require('./workers').findAll;
 const TrashWorkers = require('./workers').trash;
 const TrashAllWorkers = require('./workers').trashAll;
 const UpdateWorkers = require('./workers').update;
+//vps
+const SaveVps =require('./vps').save;
+const FindVps =require('./vps').find;
+const FindAllVps =require('./vps').findAll;
+const TrashVps = require('./vps').trash;
+const TrashAllVps = require('./vps').trashAll;
+const UpdateVps = require('./vps').update;
 
 
 
@@ -58,6 +65,92 @@ app.use(bodyParser.text({ limit: '200mb' }));
 app.use(express.static('public'));
 app.get('/', (req, res) => { 
   res.json({data:'work'});
+});
+//vps
+app.post('/api/vps/add', (req, res) => { 
+  async function saveAll(){ 
+    const {name,...rest} = req.body;  
+    let dateUnix = new Date();
+    let result = await FindVps({name});
+    console.log(result);
+    if(result || !name ){
+      res.json({name:"Vps Registrado o Invalido"});
+      return;
+    }
+    let saveData = await SaveVps({name,...rest,unix: dateUnix.getTime(), utc: dateUnix.toUTCString()}); 
+    res.json(saveData);
+  }
+  saveAll().catch((error)=>{
+    res.json({error});
+  })
+
+});
+
+app.post('/api/vps/list', (req, res) => {
+  async function getAll(){ 
+    let name = req.query.name || {};
+    let dateUnix = new Date();
+    let result = await FindAllVps({...name},{});
+    let dataArray = await result.toArray();
+    if(dataArray.length > 0){
+      res.json(dataArray);
+      return;
+    }
+    res.json({});
+  }
+  getAll().catch((error)=>{
+    console.log(error);
+    res.json({error:'no ha data'});
+  }) 
+
+});
+app.post('/api/vps/edit', (req, res) => { 
+  async function update(){ 
+    const {_id,name,...rest} = req.body;  
+    let dateUnix = new Date();
+    let saveData = await UpdateVps({_id},{name,...rest,unix: dateUnix.getTime(), utc: dateUnix.toUTCString()}); 
+    res.json(saveData);
+  }
+  update().catch((error)=>{
+    res.json({error});
+  })
+});
+app.post('/api/vps/getinfo', (req, res) => { 
+  async function getinfo(){ 
+    const {_id} = req.body;
+    let result = await FindVps({_id});
+    if(!result || !_id ){
+      res.json({name:"vps Registrado o Invalido"});
+      return;
+    }
+    res.json(result);
+  }
+  getinfo().catch((error)=>{
+    res.json({error});
+  });
+});
+app.post('/api/vps/trashall', (req, res) => { 
+  
+  async function trash(){ 
+    const {..._ids} = req.body;
+    let result = await TrashAllVps(_ids);
+    res.json(result);
+  }
+  trash().catch((error)=>{
+    console.log(error);
+    res.json({error:'error en data'});
+  })
+});
+app.post('/api/vps/trash', (req, res) => { 
+  async function trash(){ 
+    const {_id} = req.body;
+    let result = await TrashVps({_id});
+    res.json(result);
+  }
+  trash().catch((error)=>{
+    console.log(error);
+    res.json({error:'error en data'});
+  })
 });
 //workers
 app.post('/api/workers/add', (req, res) => { 
@@ -166,9 +259,8 @@ app.post('/api/collection/add', (req, res) => {
 
 app.post('/api/collection/list', (req, res) => { 
   async function getAll(){ 
-    let name = req.query.name || {};
-    let dateUnix = new Date();
-    let result = await FindAllCollection({...name},{});
+    const {fieldsObj,...name} = req.body;  
+    let result = await FindAllCollection({...name},{...fieldsObj});
     let dataArray = await result.toArray();
     if(dataArray.length > 0){
       res.json(dataArray);
@@ -183,9 +275,9 @@ app.post('/api/collection/list', (req, res) => {
 });
 app.post('/api/collection/edit', (req, res) => { 
   async function update(){ 
-    const {_id,name} = req.body;  
+    const {_id,name,...rest} = req.body;  
     let dateUnix = new Date();
-    let saveData = await UpdateCollection({_id},{name,unix: dateUnix.getTime(), utc: dateUnix.toUTCString()}); 
+    let saveData = await UpdateCollection({_id},{name,...rest,unix: dateUnix.getTime(), utc: dateUnix.toUTCString()}); 
     res.json(saveData);
   }
   update().catch((error)=>{
@@ -233,15 +325,14 @@ app.post('/api/collection/trash', (req, res) => {
 //container
 app.post('/api/container/add', (req, res) => { 
   async function saveAll(){ 
-    const {name} = req.body;  
+    const {name,...rest} = req.body;  
     let dateUnix = new Date();
     let result = await FindContainer({name});
-    console.log(result);
     if(result || !name ){
       res.json({name:"Conainer Registrado o Invalido"});
       return;
     }
-    let saveData = await SaveContainer({name,unix: dateUnix.getTime(), utc: dateUnix.toUTCString()}); 
+    let saveData = await SaveContainer({name,...rest,unix: dateUnix.getTime(), utc: dateUnix.toUTCString()}); 
     res.json(saveData);
   }
   saveAll().catch((error)=>{
@@ -250,10 +341,9 @@ app.post('/api/container/add', (req, res) => {
 });
 
 app.post('/api/container/list', (req, res) => { 
-  async function getAll(){ 
-    let name = req.query.name || {};
-    let dateUnix = new Date();
-    let result = await FindAllContainer({...name},{});
+  async function getAll(){
+    const {fieldsObj,...name} = req.body;  
+    let result = await FindAllContainer({...name},{...fieldsObj});
     let dataArray = await result.toArray();
     if(dataArray.length > 0){
       res.json(dataArray);
@@ -268,9 +358,9 @@ app.post('/api/container/list', (req, res) => {
 });
 app.post('/api/container/edit', (req, res) => { 
   async function update(){ 
-    const {_id,name} = req.body;  
+    const {_id,name,...rest} = req.body;  
     let dateUnix = new Date();
-    let saveData = await UpdateContainer({_id},{name,unix: dateUnix.getTime(), utc: dateUnix.toUTCString()}); 
+    let saveData = await UpdateContainer({_id},{name,...rest,unix: dateUnix.getTime(), utc: dateUnix.toUTCString()}); 
     res.json(saveData);
   }
   update().catch((error)=>{
