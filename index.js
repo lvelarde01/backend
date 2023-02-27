@@ -1,5 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const { MongoClient, ObjectId, ServerApiVersion } = require('mongodb');
+
 /*api manager */
 const { save, find, update, login, newUser,recoveryPass,loginAuthGoogle,checkTokenPassword} = require('./conection');
 const {sendEmails} = require('./serviceEmail');
@@ -67,6 +69,18 @@ app.get('/', (req, res) => {
   res.json({data:'work'});
 });
 //vps
+app.post('/api/vps/checkisunique',(req,res)=>{
+  const dataUserObj = req.body;
+  FindVps({...dataUserObj},{_id:true}).then((data)=>{
+    const result = {isunique:false};
+    if(data===null){
+      result.isunique = true;
+    }
+    res.json({...result});
+  }).catch((error)=>{
+    res.json({error:true});
+  });
+});
 app.post('/api/vps/add', (req, res) => { 
   async function saveAll(){ 
     const {name,...rest} = req.body;  
@@ -108,6 +122,11 @@ app.post('/api/vps/edit', (req, res) => {
   async function update(){ 
     const {_id,name,...rest} = req.body;  
     let dateUnix = new Date();
+    let Query = await FindVps({name},{_id:true,name:true});
+    if(Query?.hasOwnProperty('_id') && Query?._id?.toString() !== _id){
+      res.json({name:'VPS ya Registrado'});
+      return;
+    }
     let saveData = await UpdateVps({_id},{name,...rest,unix: dateUnix.getTime(), utc: dateUnix.toUTCString()}); 
     res.json(saveData);
   }
@@ -153,12 +172,23 @@ app.post('/api/vps/trash', (req, res) => {
   })
 });
 //workers
+app.post('/api/workers/checkisunique',(req,res)=>{
+  const dataUserObj = req.body;
+  FindWorkers({...dataUserObj},{_id:true}).then((data)=>{
+    const result = {isunique:false};
+    if(data===null){
+      result.isunique = true;
+    }
+    res.json({...result});
+  }).catch((error)=>{
+    res.json({error:true});
+  });
+});
 app.post('/api/workers/add', (req, res) => { 
   async function saveAll(){ 
     const {name} = req.body;  
     let dateUnix = new Date();
     let result = await FindWorkers({name});
-    console.log(result);
     if(result || !name ){
       res.json({name:"Conainer Registrado o Invalido"});
       return;
@@ -194,6 +224,11 @@ app.post('/api/workers/edit', (req, res) => {
   async function update(){ 
     const {_id,name} = req.body;  
     let dateUnix = new Date();
+    let Query = await FindWorkers({name},{_id:true,name:true});
+    if(Query?.hasOwnProperty('_id') && Query?._id?.toString() !== _id){
+      res.json({name:'Worker ya Registrado'});
+      return;
+    }
     let saveData = await UpdateWorkers({_id},{name,unix: dateUnix.getTime(), utc: dateUnix.toUTCString()}); 
     res.json(saveData);
   }
@@ -239,6 +274,18 @@ app.post('/api/workers/trash', (req, res) => {
   })
 });
 //collection
+app.post('/api/collection/checkisunique',(req,res)=>{
+  const dataUserObj = req.body;
+  FindCollection({...dataUserObj},{_id:true}).then((data)=>{
+    const result = {isunique:false};
+    if(data===null){
+      result.isunique = true;
+    }
+    res.json({...result});
+  }).catch((error)=>{
+    res.json({error:true});
+  });
+});
 app.post('/api/collection/add', (req, res) => { 
   async function saveAll(){ 
     const {name} = req.body;  
@@ -277,6 +324,11 @@ app.post('/api/collection/edit', (req, res) => {
   async function update(){ 
     const {_id,name,...rest} = req.body;  
     let dateUnix = new Date();
+    let Query = await FindCollection({name},{_id:true,name:true});
+    if(Query?.hasOwnProperty('_id') && Query?._id?.toString() !== _id){
+      res.json({name:'Coleccion ya Registrado'});
+      return;
+    }
     let saveData = await UpdateCollection({_id},{name,...rest,unix: dateUnix.getTime(), utc: dateUnix.toUTCString()}); 
     res.json(saveData);
   }
@@ -323,6 +375,18 @@ app.post('/api/collection/trash', (req, res) => {
 });
 
 //container
+app.post('/api/container/checkisunique',(req,res)=>{
+  const dataUserObj = req.body;
+  FindContainer({...dataUserObj},{_id:true}).then((data)=>{
+    const result = {isunique:false};
+    if(data===null){
+      result.isunique = true;
+    }
+    res.json({...result});
+  }).catch((error)=>{
+    res.json({error:true});
+  });
+});
 app.post('/api/container/add', (req, res) => { 
   async function saveAll(){ 
     const {name,...rest} = req.body;  
@@ -358,8 +422,13 @@ app.post('/api/container/list', (req, res) => {
 });
 app.post('/api/container/edit', (req, res) => { 
   async function update(){ 
-    const {_id,name,...rest} = req.body;  
+    const {_id,name,...rest} = req.body;
     let dateUnix = new Date();
+    let Query = await FindContainer({name},{_id:true,name:true});
+    if(Query?.hasOwnProperty('_id') && Query?._id?.toString() !== _id){
+      res.json({name:'Container ya Registrado'});
+      return;
+    }
     let saveData = await UpdateContainer({_id},{name,...rest,unix: dateUnix.getTime(), utc: dateUnix.toUTCString()}); 
     res.json(saveData);
   }
@@ -405,10 +474,27 @@ app.post('/api/container/trash', (req, res) => {
   })
 });
 //WareHouse
+app.post('/api/warehouse/checkisunique',(req,res)=>{
+  const dataUserObj = req.body;
+  FindWareHouse({...dataUserObj},{_id:true}).then((data)=>{
+    const result = {isunique:false};
+    if(data===null){
+      result.isunique = true;
+    }
+    res.json({...result});
+  }).catch((error)=>{
+    res.json({error:true});
+  });
+});
 app.post('/api/warehouse/edit', (req, res) => { 
   async function update(){ 
     const {_id,name} = req.body;  
     let dateUnix = new Date();
+    let Query = await FindWareHouse({name},{_id:true,name:true});
+    if(Query?.hasOwnProperty('_id') && Query?._id?.toString() !== _id){
+      res.json({name:'WareHouse ya Registrado'});
+      return;
+    }
     let saveData = await UpdateWareHouse({_id},{name,unix: dateUnix.getTime(), utc: dateUnix.toUTCString()}); 
     res.json(saveData);
   }
@@ -598,6 +684,11 @@ app.post('/api/users/edit', (req, res) => {
   async function update(){ 
     const {_id,...name} = req.body;  
     let dateUnix = new Date();
+    let Query = await FindUser({name},{_id:true,name:true});
+    if(Query?.hasOwnProperty('_id') && Query?._id?.toString() !== _id){
+      res.json({name:'Usuario ya Registrado'});
+      return;
+    }
     let saveData = await UpdateUser({_id},{...name,unix: dateUnix.getTime(), utc: dateUnix.toUTCString()}); 
     res.json(saveData);
   }
