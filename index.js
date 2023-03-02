@@ -49,6 +49,22 @@ const TrashVps = require('./vps').trash;
 const TrashAllVps = require('./vps').trashAll;
 const UpdateVps = require('./vps').update;
 
+//department
+const SaveDepartment =require('./department').save;
+const FindDepartment =require('./department').find;
+const FindAllDepartment =require('./department').findAll;
+const TrashDepartment = require('./department').trash;
+const TrashAllDepartment = require('./department').trashAll;
+const UpdateDepartment = require('./department').update;
+
+//calendars
+const SaveCalendar =require('./calendar').save;
+const FindCalendar =require('./calendar').find;
+const FindAllCalendar =require('./calendar').findAll;
+const TrashCalendar = require('./calendar').trash;
+const TrashAllCalendar = require('./calendar').trashAll;
+const UpdateCalendar = require('./calendar').update;
+
 
 
 const bcrypt = require('bcryptjs');
@@ -575,6 +591,215 @@ app.post('/api/warehouse/add', (req, res) => {
     }
     let saveData = await SaveWareHouse({name,unix: dateUnix.getTime(), utc: dateUnix.toUTCString()}); 
     console.log(saveData);
+    res.json(saveData);
+  }
+  saveAll().catch((error)=>{
+    res.json({error});
+  })
+});
+//department
+app.post('/api/departments/checkisunique',(req,res)=>{
+  const dataUserObj = req.body;
+  FindDepartment({...dataUserObj},{_id:true}).then((data)=>{
+    const result = {isunique:false};
+    if(data===null){
+      result.isunique = true;
+    }
+    res.json({...result});
+  }).catch((error)=>{
+    res.json({error:true});
+  });
+});
+app.post('/api/departments/edit', (req, res) => { 
+  async function update(){ 
+    const {_id,name} = req.body;  
+    let dateUnix = new Date();
+    let Query = await FindDepartment({name},{_id:true,name:true});
+    if(Query?.hasOwnProperty('_id') && Query?._id?.toString() !== _id){
+      res.json({name:'Departamento ya Registrado'});
+      return;
+    }
+    let saveData = await UpdateDepartment({_id},{name,unix: dateUnix.getTime(), utc: dateUnix.toUTCString()}); 
+    res.json(saveData);
+  }
+  update().catch((error)=>{
+    res.json({error});
+  })
+});
+app.post('/api/departments/getinfo', (req, res) => { 
+  
+  async function getinfo(){ 
+    const {_id} = req.body;
+    let result = await FindDepartment({_id});
+    if(!result || !_id ){
+      res.json({name:"Departamento Registrado o Invalido"});
+      return;
+    }
+    res.json(result);
+  }
+  getinfo().catch((error)=>{
+    res.json({error});
+  });
+});
+app.post('/api/departments/trashall', (req, res) => { 
+  
+  async function trash(){ 
+    const {..._ids} = req.body;
+    let result = await TrashAllDepartment(_ids);
+    res.json(result);
+  }
+  trash().catch((error)=>{
+    console.log(error);
+    res.json({error:'error en data'});
+  })
+});
+app.post('/api/departments/trash', (req, res) => { 
+  
+  async function trash(){ 
+    const {_id} = req.body;
+    console.log(_id);
+    let result = await TrashDepartment({_id});
+    res.json(result);
+  }
+  trash().catch((error)=>{
+    console.log(error);
+    res.json({error:'error en data'});
+  })
+});
+app.post('/api/departments/list', (req, res) => { 
+  async function getAll(){ 
+    let name = req.query.name || {};
+    let dateUnix = new Date();
+    let result = await FindAllDepartment({...name},{});
+    let dataArray = await result.toArray();
+    if(dataArray.length > 0){
+      res.json(dataArray);
+      return;
+    }
+    res.json({});
+
+  }
+  getAll().catch((error)=>{
+    console.log(error);
+    res.json({error:'no ha data'});
+  })
+});
+app.post('/api/departments/add', (req, res) => { 
+  async function saveAll(){ 
+    const {name} = req.body;  
+    console.log(name);  
+    let dateUnix = new Date();
+    let result = await FindDepartment({name});
+    if(result || !name ){
+      res.json({name:"Departamento Registrado o Invalido"});
+      return;
+    }
+    let saveData = await SaveDepartment({name,unix: dateUnix.getTime(), utc: dateUnix.toUTCString()}); 
+    res.json(saveData);
+  }
+  saveAll().catch((error)=>{
+    res.json({error});
+  })
+});
+//calendars
+app.post('/api/calendars/checkisunique',(req,res)=>{
+  const dataUserObj = req.body;
+  FindCalendar({...dataUserObj},{_id:true}).then((data)=>{
+    const result = {isunique:false};
+    if(data===null){
+      result.isunique = true;
+    }
+    res.json({...result});
+  }).catch((error)=>{
+    res.json({error:true});
+  });
+});
+app.post('/api/calendars/edit', (req, res) => { 
+  async function update(){ 
+    const {_id,date_register,department_id,worker_id,...data} = req.body;  
+
+    let dateUnix = new Date();
+    let Query = await FindCalendar({$and: [ {'date_register':date_register},{'department_id':department_id},{'worker_id':worker_id}]});
+    if(Query?.hasOwnProperty('_id') && Query?._id?.toString() !== _id){
+      res.json({name:'Asistencia ya Registrado'});
+      return;
+    }
+    let saveData = await UpdateCalendar({_id},{date_register,department_id,worker_id,...data,unix: dateUnix.getTime(), utc: dateUnix.toUTCString()}); 
+    res.json(saveData);
+  }
+  update().catch((error)=>{
+    res.json({error});
+  })
+});
+app.post('/api/calendars/getinfo', (req, res) => { 
+  
+  async function getinfo(){ 
+    const {_id} = req.body;
+    let result = await FindCalendar({_id});
+    if(!result || !_id ){
+      res.json({name:"Departamento Registrado o Invalido"});
+      return;
+    }
+    res.json(result);
+  }
+  getinfo().catch((error)=>{
+    res.json({error});
+  });
+});
+app.post('/api/calendars/trashall', (req, res) => { 
+  
+  async function trash(){ 
+    const {..._ids} = req.body;
+    let result = await TrashAllCalendar(_ids);
+    res.json(result);
+  }
+  trash().catch((error)=>{
+    console.log(error);
+    res.json({error:'error en data'});
+  })
+});
+app.post('/api/calendars/trash', (req, res) => { 
+  
+  async function trash(){ 
+    const {_id} = req.body;
+    console.log(_id);
+    let result = await TrashCalendar({_id});
+    res.json(result);
+  }
+  trash().catch((error)=>{
+    console.log(error);
+    res.json({error:'error en data'});
+  })
+});
+app.post('/api/calendars/list', (req, res) => { 
+  async function getAll(){ 
+    let name = req.query.name || {};
+    let dateUnix = new Date();
+    let result = await FindAllCalendar({...name},{});
+    let dataArray = await result.toArray();
+    if(dataArray.length > 0){
+      res.json(dataArray);
+      return;
+    }
+    res.json({});
+
+  }
+  getAll().catch((error)=>{
+    console.log(error);
+    res.json({error:'no ha data'});
+  })
+});
+app.post('/api/calendars/add', (req, res) => { 
+  async function saveAll(){ 
+    const {date_register,department_id,worker_id,...data} = req.body;  
+    let dateUnix = new Date();
+    let result = await FindCalendar({$and: [ {'date_register':date_register},{'department_id':department_id},{'worker_id':worker_id}]});
+    console.log(result);
+    if(result || !date_register ){
+      res.json({name:"Asistencia Registrado o Invalido"});
+      return;
+    }
+    let saveData = await SaveCalendar({date_register,department_id,worker_id,...data,unix: dateUnix.getTime(), utc: dateUnix.toUTCString()}); 
     res.json(saveData);
   }
   saveAll().catch((error)=>{
