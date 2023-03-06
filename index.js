@@ -719,9 +719,29 @@ app.post('/api/calendars/edit', (req, res) => {
     const {_id,date_register,department_id,worker_id,...data} = req.body;  
 
     let dateUnix = new Date();
-    let Query = await FindCalendar({$and: [ {'date_register':date_register},{'department_id':department_id},{'worker_id':worker_id}]});
-    if(Query?.hasOwnProperty('_id') && Query?._id?.toString() !== _id){
-      res.json({name:'Asistencia ya Registrado'});
+    let result = await FindAllCalendar({$and: [ {'date_register':date_register},{'worker_id':worker_id}]});
+    let dataArray = await result.toArray();
+    let errors = {};
+    let check = false;
+    if(dataArray.some((query)=> query._id.toString()!= _id && Number(query?.worker_finish_hour) === Number(data?.worker_start_hour) && (Number(query?.worker_finish_min) > Number(data?.worker_start_min) || Number(query?.worker_finish_min) === Number(data?.worker_start_min) ))===true){
+      errors.worker_start_min = "El minuto debe ser superior a la ultima registrada";
+      check=true;
+    }else if(dataArray.some((query)=> query._id.toString()!= _id && Number(query?.worker_finish_hour) > Number(data?.worker_start_hour))===true){
+        errors.worker_start_hour = "la hora debe ser superior a la ultima registrada";
+      check=true;
+    }else  if(Number(data?.worker_start_hour) === Number(data?.worker_finish_hour) && Number(data?.worker_start_min) > Number(data?.worker_finish_min)  ){
+      errors.worker_finish_min = "El minuto debe ser superior al registro de entrada";
+      check=true;
+    }else if(Number(data?.worker_start_hour) !== Number(data?.worker_finish_hour) && Number(data?.worker_start_hour) > Number(data?.worker_finish_hour) ){
+      errors.worker_finish_hour = "El registro de salida debe ser superior al de entrada";
+      check=true;
+    }else if(Number(data?.worker_start_hour) === Number(data?.worker_finish_hour) && Number(data?.worker_start_min) === Number(data?.worker_finish_min) ){
+      errors.worker_finish_min = "El registro de salida debe ser superior al de entrada";
+      check=true;
+    }
+   
+    if(check){
+      res.json({...errors});
       return;
     }
     let saveData = await UpdateCalendar({_id},{date_register,department_id,worker_id,...data,unix: dateUnix.getTime(), utc: dateUnix.toUTCString()}); 
@@ -792,11 +812,49 @@ app.post('/api/calendars/list', (req, res) => {
 app.post('/api/calendars/add', (req, res) => { 
   async function saveAll(){ 
     const {date_register,department_id,worker_id,...data} = req.body;  
+    //data worker_start_hour,worker_start_min,worker_finish_hour,worker_finish_min,
     let dateUnix = new Date();
-    let result = await FindCalendar({$and: [ {'date_register':date_register},{'department_id':department_id},{'worker_id':worker_id}]});
-    console.log(result);
-    if(result || !date_register ){
-      res.json({name:"Asistencia Registrado o Invalido"});
+    let result = await FindAllCalendar({$and: [ {'date_register':date_register},{'worker_id':worker_id}]});
+    let dataArray = await result.toArray();
+    let errors = {};
+    let check = false;
+    if(dataArray.some((query)=>!query?.hasOwnProperty('worker_finish_hour'))===true){
+      errors.worker_start_hour = "Debe finalizar un registro inicializado";
+      check=true;
+    }else if(dataArray.some((query)=> Number(query?.worker_finish_hour) === Number(data?.worker_start_hour) && (Number(query?.worker_finish_min) > Number(data?.worker_start_min) || Number(query?.worker_finish_min) === Number(data?.worker_start_min) ))===true){
+      errors.worker_start_min = "El minuto debe ser superior a la ultima registrada";
+      check=true;
+    }else if(dataArray.some((query)=>Number(query?.worker_finish_hour) > Number(data?.worker_start_hour))===true){
+      errors.worker_start_hour = "la hora debe ser superior a la ultima registrada";
+      check=true;
+    }
+/*
+    let result = await FindAllCalendar({$and: [ {'date_register':date_register},{'department_id':department_id},{'worker_id':worker_id}]});
+    let dataArray = await result.toArray();
+    let errors = {};
+    let check = false;
+    if(dataArray.some((query)=> query._id.toString()!= _id && Number(query?.worker_finish_hour) === Number(data?.worker_start_hour) && (Number(query?.worker_finish_min) > Number(data?.worker_start_min) || Number(query?.worker_finish_min) === Number(data?.worker_start_min) ))===true){
+      errors.worker_start_min = "El minuto debe ser superior a la ultima registrada";
+      check=true;
+    }else if(dataArray.some((query)=> query._id.toString()!= _id && Number(query?.worker_finish_hour) > Number(data?.worker_start_hour))===true){
+        errors.worker_start_hour = "la hora debe ser superior a la ultima registrada";
+      check=true;
+    }else  if(Number(data?.worker_start_hour) === Number(data?.worker_finish_hour) && Number(data?.worker_start_min) > Number(data?.worker_finish_min)  ){
+      errors.worker_finish_min = "El minuto debe ser superior al registro de entrada";
+      check=true;
+    }else if(Number(data?.worker_start_hour) !== Number(data?.worker_finish_hour) && Number(data?.worker_start_hour) > Number(data?.worker_finish_hour) ){
+      errors.worker_finish_hour = "El registro de salida debe ser superior al de entrada";
+      check=true;
+    }
+   
+    if(check){
+      res.json({...errors});
+      return;
+    }
+*/
+
+    if(check){
+      res.json({...errors});
       return;
     }
     let saveData = await SaveCalendar({date_register,department_id,worker_id,...data,unix: dateUnix.getTime(), utc: dateUnix.toUTCString()}); 
