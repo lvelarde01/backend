@@ -118,9 +118,8 @@ app.post('/api/vps/add', (req, res) => {
 
 app.post('/api/vps/list', (req, res) => {
   async function getAll(){ 
-    let name = req.query.name || {};
-    let dateUnix = new Date();
-    let result = await FindAllVps({...name},{});
+    let {fieldsObj,...query} = req.body || {};
+    let result = await FindAllVps({...query},{...fieldsObj});
     let dataArray = await result.toArray();
     if(dataArray.length > 0){
       res.json(dataArray);
@@ -220,9 +219,8 @@ app.post('/api/workers/add', (req, res) => {
 
 app.post('/api/workers/list', (req, res) => {
   async function getAll(){ 
-    let name = req.query.name || {};
-    let dateUnix = new Date();
-    let result = await FindAllWorkers({...name},{});
+    let {fieldsObj,...query} = req.body || {};
+    let result = await FindAllWorkers({...query},{...fieldsObj});
     let dataArray = await result.toArray();
     if(dataArray.length > 0){
       res.json(dataArray);
@@ -321,9 +319,9 @@ app.post('/api/collection/add', (req, res) => {
 });
 
 app.post('/api/collection/list', (req, res) => { 
-  async function getAll(){ 
-    const {fieldsObj,...name} = req.body;  
-    let result = await FindAllCollection({...name},{...fieldsObj});
+  async function getAll(){
+    let {fieldsObj,...query} = req.body || {};
+    let result = await FindAllCollection({...query},{...fieldsObj}); 
     let dataArray = await result.toArray();
     if(dataArray.length > 0){
       res.json(dataArray);
@@ -422,8 +420,8 @@ app.post('/api/container/add', (req, res) => {
 
 app.post('/api/container/list', (req, res) => { 
   async function getAll(){
-    const {fieldsObj,...name} = req.body;  
-    let result = await FindAllContainer({...name},{...fieldsObj});
+    let {fieldsObj,...query} = req.body || {};
+    let result = await FindAllContainer({...query},{...fieldsObj}); 
     let dataArray = await result.toArray();
     if(dataArray.length > 0){
       res.json(dataArray);
@@ -562,9 +560,8 @@ app.post('/api/warehouse/trash', (req, res) => {
 });
 app.post('/api/warehouse/list', (req, res) => { 
   async function getAll(){ 
-    let name = req.query.name || {};
-    let dateUnix = new Date();
-    let result = await FindAllWareHouse({...name},{});
+    let {fieldsObj,...query} = req.body || {};
+    let result = await FindAllWareHouse({...query},{...fieldsObj}); 
     let dataArray = await result.toArray();
     if(dataArray.length > 0){
       res.json(dataArray);
@@ -667,10 +664,9 @@ app.post('/api/departments/trash', (req, res) => {
   })
 });
 app.post('/api/departments/list', (req, res) => { 
-  async function getAll(){ 
-    let name = req.query.name || {};
-    let dateUnix = new Date();
-    let result = await FindAllDepartment({...name},{});
+  async function getAll(){
+    let {fieldsObj,...query} = req.body || {};
+    let result = await FindAllDepartment({...query},{...fieldsObj});  
     let dataArray = await result.toArray();
     if(dataArray.length > 0){
       res.json(dataArray);
@@ -793,9 +789,8 @@ app.post('/api/calendars/trash', (req, res) => {
 });
 app.post('/api/calendars/list', (req, res) => { 
   async function getAll(){ 
-    let name = req.query.name || {};
-    let dateUnix = new Date();
-    let result = await FindAllCalendar({...name},{});
+    let {fieldsObj,...query} = req.body || {};
+    let result = await FindAllCalendar({...query},{...fieldsObj});
     let dataArray = await result.toArray();
     if(dataArray.length > 0){
       res.json(dataArray);
@@ -920,9 +915,8 @@ app.post('/api/users/add',(req,res) =>{
 });
 app.post('/api/users/list', (req, res) => {
   async function getAll(){ 
-    let name = req.query.name || {};
-    let dateUnix = new Date();
-    let result = await FindAllUser({...name},{});
+    let {fieldsObj,...query} = req.body || {};
+    let result = await FindAllUser({...query},{...fieldsObj});
     let dataArray = await result.toArray();
     if(dataArray.length > 0){
       res.json(dataArray);
