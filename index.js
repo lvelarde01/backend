@@ -1066,7 +1066,7 @@ app.post('/api/users/info', (req, res) => {
 app.post('/api/users/updateinfo', (req, res) => {
   const { query, data } = req.body;
   console.log(data);
-  update({ ...query }, { ...data }).then((data) => {
+  UpdateUser({ ...query }, { ...data }).then((data) => {
     res.json(data);
   });
 });
