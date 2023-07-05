@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 const {OAuth2Client} = require('google-auth-library');
 
 const client = new MongoClient(process.env.URI_MONGODB);
-const NAMEDB = 'manager';
+const NAMEDB = 'mrdelivery';
 const COLLECTION = 'users';
 
 function _JsonParse(str) {
@@ -47,7 +47,7 @@ async function verifyOauthGoogle(responseOauth) {
 async function loginAuthGoogle(responseOauth={}){
   const errors = {};
   const userOauth = await verifyOauthGoogle(responseOauth);
-  const dataUserObj = await find({email:userOauth?.email},{_id:true,username:true,firtsname:true,lastname:true,theme:true,photo:true,saveConfigBrowser:true});
+  const dataUserObj = await find({email:userOauth?.email},{_id:true,username:true,role:true,firstname:true,lastname:true,theme:true,photo:true,saveConfigBrowser:true});
   const salt = bcrypt.genSaltSync(10);
   const password= genUserPassword(userOauth.email);
   const token = bcrypt.hashSync(password, salt);
@@ -67,20 +67,20 @@ async function loginAuthGoogle(responseOauth={}){
       saveConfigBrowser:true,
       keypassword:'',
       token,
-      role:'',
+      role:responseOauth?.typeLoggin,
+      type_access:"google",
+      finish_register:false,
      }
      const newUserObj = await newUser(saveUserObj);
      if(newUserObj.acknowledged) {
       return {...saveUserObj,id:newUserObj._id};
       }
-    }else{
+    }
       const result = await client
       .db(NAMEDB)
       .collection(COLLECTION)
-      .updateOne({ _id: dataUserObj._id }, { $set: { token } });
-      return {...dataUserObj,token,id:dataUserObj._id};
-    }
-
+      .updateOne({ _id: dataUserObj._id}, { $set: { token,type_login:'google'} });
+      return {...dataUserObj,token,id:dataUserObj._id,type_login:'google'};
 }
 
 
@@ -95,6 +95,22 @@ async function recoveryPass(fieldsObj={}){
     return {errors:"No se logro realizar el registro"};
   }
   return {email:fieldsObj?.email,keypassword}; 
+}
+async function updatePassword({_id,oldpassword,password,createPassword=false}){
+  const errors = {};
+  _id = ObjectId(_id);
+  const userInfo = await find({_id},{_id:true,username:true,salt:true,password:true});
+  console.log({_id,oldpassword,password});
+
+  if(!userInfo){ errors.oldpassword = "Usuario o contraseña Incorrecta ";}
+    if(!createPassword){
+      const userCurrentPassword = bcrypt.hashSync(oldpassword, userInfo.salt);
+      if( userCurrentPassword !==userInfo.password){ errors.oldpassword = "contrasena Incorrecta";}
+    }
+  if(Object.keys(errors).length > 0){ return {errors};}
+  const newpassword = bcrypt.hashSync(password, userInfo.salt);
+  const result =  await update({_id},{password:newpassword});
+  return result;
 }
 
 async function newUser(fieldsObj={}){
@@ -161,9 +177,9 @@ async function login(username, password) {
     const result = await client
       .db(NAMEDB)
       .collection(COLLECTION)
-      .updateOne({ _id: queryObj._id }, { $set: { token } });
+      .updateOne({ _id: queryObj._id }, { $set: { token,type_login:'normal' } });
     if (result.acknowledged) {
-      return { username, id: queryObj._id, token,theme:queryObj.theme,photo:queryObj.photo,saveConfigBrowser:queryObj.saveConfigBrowser};
+      return { username, id: queryObj._id,role: queryObj.role, token,type_login:'normal',theme:queryObj.theme,photo:queryObj.photo,saveConfigBrowser:queryObj.saveConfigBrowser};
     }
   }
   return {
@@ -178,6 +194,7 @@ exports.find = find;
 exports.update = update;
 exports.login = login;
 exports.newUser = newUser;
+exports.updatePassword = updatePassword;
 exports.recoveryPass = recoveryPass;
 exports.loginAuthGoogle = loginAuthGoogle;
 exports.checkTokenPassword = checkTokenPassword;

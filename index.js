@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 /*api manager */
-const { save, find, update, login, newUser,recoveryPass,loginAuthGoogle,checkTokenPassword} = require('./conection');
+const { save, find, update, login, newUser,recoveryPass,loginAuthGoogle,checkTokenPassword,updatePassword} = require('./conection');
 const {sendEmails} = require('./serviceEmail');
 
 const bcrypt = require('bcryptjs');
@@ -87,9 +87,14 @@ app.post('/api/users/checktoken',(req,res)=>{
     res.json({error:"se presento un problema en el servidor. Por favor, intenta mas Tarde."});
   });
 });
-app.post('/api/users/newpassword',(req,res)=>{
-  const dataUserObj = req.body;
-
+app.post('/api/users/password',(req,res)=>{
+  updatePassword({...req.body}).then((data)=>{
+    console.log(data);
+   res.json({...data});
+  }).catch((error)=>{
+    console.log(error);
+    res.json({acknowledged:false});
+  });
 });
 app.post('/api/users/recoverypassword',(req,res)=>{
   const dataUserObj = req.body;
