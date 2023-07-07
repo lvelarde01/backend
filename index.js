@@ -74,7 +74,9 @@ const app = express();
 const cors = require('cors');
 require('dotenv').config();
 
-app.use(cors());
+app.use(cors({
+  origin: '*'
+}));
 app.use(bodyParser.json({limit: '250mb', extended: true}));
 app.use(bodyParser.urlencoded({limit: "250mb", extended: true, parameterLimit:50000}));
 app.use(bodyParser.text({ limit: '200mb' }));
