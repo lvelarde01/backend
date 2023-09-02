@@ -51,8 +51,16 @@ async function loginAuthGoogle(responseOauth={}){
   const salt = bcrypt.genSaltSync(10);
   const password= genUserPassword(userOauth.email);
   const token = bcrypt.hashSync(password, salt);
-  
+
   if(!dataUserObj){
+    return {
+      errors: {
+        username: 'Usuario Incorrecto',
+      },
+    };
+  }
+  
+  /*if(!dataUserObj){
     saveUserObj = {
       email: userOauth.email,
       username:genUsernameByEmail(userOauth.email),
@@ -76,6 +84,8 @@ async function loginAuthGoogle(responseOauth={}){
       return {...saveUserObj,id:newUserObj._id};
       }
     }
+    */
+   
       const result = await client
       .db(NAMEDB)
       .collection(COLLECTION)

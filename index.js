@@ -2,6 +2,13 @@ const express = require('express');
 const bodyParser = require('body-parser');
 /*api manager */
 const { save, find, update, login, newUser,recoveryPass,loginAuthGoogle,checkTokenPassword,updatePassword} = require('./conection');
+const findAllStore = require('./store').findAll;
+const findStore = require('./store').find;
+
+const saveAllStore = require('./store').saveAll;
+const deleteAllStore = require('./store').deleteAll;
+
+
 const {sendEmails} = require('./serviceEmail');
 
 const bcrypt = require('bcryptjs');
@@ -161,6 +168,42 @@ app.post('/api/users/updateinfo', (req, res) => {
     res.json(data);
   });
 });
+/* api Search */
+app.post('/api/store/search', (req, res) => {
+  const { query } = req.body;
+  const fieldsObj = [
+    {name:'Farmatodo',likes:75,dislike:150,address:'ciudad danto',phone:'+341232132131',logitud:0,latitud:0,photo:'/stores/store1.png',user_id:0,status:"enable",delivery:true,pickup:true,time_delivery_start:"20",time_delivery_end:"20"},
+    {name:'Farmatodo ojeda',likes:50,dislike:30,address:'ciudad bachaquero',phone:'+341232132131',logitud:0,latitud:0,photo:'/stores/store1.png',user_id:0,status:"enable",delivery:true,pickup:true,time_delivery_start:"20",time_delivery_end:"20"},
+    {name:'Farmatodo maracaibo',likes:20,dislike:10,address:'ciudad cabimas',phone:'+341232132131',logitud:0,latitud:0,photo:'/stores/store1.png',user_id:0,status:"enable",delivery:true,pickup:true,time_delivery_start:"20",time_delivery_end:"20"},
+    {name:'Farmatodo danto',likes:100,dislike:5,address:'ciudad maracaibo',phone:'+341232132131',logitud:0,latitud:0,photo:'/stores/store1.png',user_id:0,status:"enable",delivery:true,pickup:true,time_delivery_start:"20",time_delivery_end:"20"},
+  ]
+  const filtro = {
+    $or: [
+      { name: { $regex: query, $options: "i" } },
+      { address: { $regex: query, $options: "i" } },
+    ],
+  };
+  findAllStore(filtro,{},{likes:-1}).then((result)=>{
+    res.json(result);
+  });
+ /* deleteAllStore({}).then((result)=>{
+    res.json(result);
+  });*/
+  /*saveAllStore(fieldsObj).then((result)=>{
+    res.json(result);
+  })*/
+  console.log(req.body);
+  
+});
+app.post('/api/stores/profile', (req, res) => {
+  const { query,q } = req.body;
+  console.log(req.body);
+  /*findStore({_id:q}).then((result)=>{
+    res.json({result:'found'});
+  })*/
+  res.json({result:'work'})
+});
+
 const listener = app.listen(process.env.PORT || 3000, () => {
   console.log('Your app is listening on port ' + listener.address().port);
 });
