@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 /*api manager */
-const { save, find, update, login, newUser,recoveryPass,loginAuthGoogle,checkTokenPassword,updatePassword} = require('./conection');
+const { save, find, update, login, newUser,recoveryPass,loginAuthGoogle,checkTokenPassword,updatePassword,findAll} = require('./conection');
 const findAllStore = require('./store').findAll;
 const findStore = require('./store').find;
 
@@ -154,16 +154,47 @@ app.post('/api/users/login', (req, res) => {
       res.json(error);
     });
 });
+app.post('/api/users/find', (req, res) => {
+  const { _id } = req.body;
+  console.log(_id);
+  find({ _id }).then((data) => {
+    res.json(data);
+  });
+});
+app.post('/api/users/update', (req, res) => {
+  const {data ,...query } = req.body;
+  console.log({query});
+  res.json({error:"hola"});
+  /*update({ ...query }, { ...data }).then((data) => {
+    res.json(data);
+  });*/
+});
 app.post('/api/users/info', (req, res) => {
   const { _id, token } = req.body;
   find({ token }).then((data) => {
     res.json(data);
   });
 });
+app.post('/api/users/list', (req, res) => {
+  const { ...query } = req.body;
+  const filtro = {
+    $or: [
+      { username: { $regex: "a", $options: "i" } },
+    ],
+  };
+  findAll(filtro,{},query).then((data)=>{
+    res.json(data);
+  }).catch((error)=>{
+      console.log({error});
+      res.json({error:"catch error"});
 
+  });
+
+});
 app.post('/api/users/updateinfo', (req, res) => {
   const { query, data } = req.body;
   console.log(data);
+  
   update({ ...query }, { ...data }).then((data) => {
     res.json(data);
   });

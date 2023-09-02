@@ -159,6 +159,9 @@ async function update(queryObj = {}, fieldsObj = {}) {
 }
 async function find(queryObj = {}, fieldsObj = {}) {
   if(Object.entries(queryObj).length < 1) return null;
+  if(queryObj?._id){queryObj._id = ObjectId(queryObj._id);}
+  console.log({queryObj});
+
   const result = await client
     .db(NAMEDB)
     .collection(COLLECTION)
@@ -199,8 +202,29 @@ async function login(username, password) {
   };
 }
 
+async function findAll(queryObj = {}, fieldsObj = {},order = {}) {
+  
+  let result = null
+    if(Object.entries(queryObj).length < 1) return null;
+
+    if(Object.entries(order).length > 0) {
+      console.log({order})
+       result = await client
+      .db(NAMEDB)
+      .collection(COLLECTION)
+      .find(queryObj,{ projection: fieldsObj }).sort(order).toArray();
+    }else{
+      result = await client
+      .db(NAMEDB)
+      .collection(COLLECTION)
+      .find(queryObj,{ projection: fieldsObj }).toArray();
+    }
+    return result;
+  }
+
 exports.save = save;
 exports.find = find;
+exports.findAll = findAll;
 exports.update = update;
 exports.login = login;
 exports.newUser = newUser;
