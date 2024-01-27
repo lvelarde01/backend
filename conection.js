@@ -149,7 +149,6 @@ async function update(queryObj = {}, fieldsObj = {}) {
   if (!ObjectId.isValid(queryObj._id)) {
     return { error: 'Id Invalidate' };
   }
-  await client.connect();
   queryObj._id = ObjectId(queryObj._id);
   const result = await client
     .db(NAMEDB)

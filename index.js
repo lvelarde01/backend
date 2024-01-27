@@ -162,12 +162,12 @@ app.post('/api/users/find', (req, res) => {
   });
 });
 app.post('/api/users/update', (req, res) => {
-  const {data ,...query } = req.body;
-  console.log({query});
-  res.json({error:"hola"});
-  /*update({ ...query }, { ...data }).then((data) => {
+  const {_id ,...data } = req.body;
+  update({ _id }, { ...data }).then((data) => {
     res.json(data);
-  });*/
+  }).catch((erro)=>{
+    res.json({error:"data"});
+  });
 });
 app.post('/api/users/info', (req, res) => {
   const { _id, token } = req.body;
@@ -179,7 +179,7 @@ app.post('/api/users/list', (req, res) => {
   const { ...query } = req.body;
   const filtro = {
     $or: [
-      { username: { $regex: "a", $options: "i" } },
+      { username: { $regex: "", $options: "i" } },
     ],
   };
   findAll(filtro,{},query).then((data)=>{
